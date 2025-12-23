@@ -6,7 +6,7 @@ st.set_page_config(page_title="명절 예매 현황 실시간", layout="centered
 
 # 1. 구글 시트 설정
 # 주소 뒤에 /export?format=csv를 붙이면 더 안정적으로 읽어올 수 있습니다.
-SHEET_URL = "https://docs.google.com/spreadsheets/d/1-HR4JFkcPC0mJGVFmDS1rcCfgnF0n2z3Env0Ha9d-tQ/edit?usp=drivesdk" 
+SHEET_URL = "https://docs.google.com/spreadsheets/d/1-HR4JFkcPC0mJGVFmDS1rcCfgnF0n2z3Env0Ha9d-tQ" 
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 # 데이터 로드 (에러 방지 로직 보강)
