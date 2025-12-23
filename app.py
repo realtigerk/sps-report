@@ -5,15 +5,20 @@ import pandas as pd
 st.set_page_config(page_title="명절 예매 현황 실시간", layout="centered")
 
 # 구글 시트 연결
+# app.py의 상단 부분을 이렇게 바꿔보세요
+SHEET_URL = "본인의_구글시트_주소_전체"
 conn = st.connection("gsheets", type=GSheetsConnection)
+df = conn.read(spreadsheet=SHEET_URL, ttl=0)
+
+#conn = st.connection("gsheets", type=GSheetsConnection)
 
 # 데이터 불러오기 (ttl=0으로 설정해야 실시간 반영됨)
 # df = conn.read(ttl=0)
 # Secrets에 등록된 spreadsheet 주소를 직접 참조하도록 명시
-df = conn.read(spreadsheet=st.secrets["connections"]["gsheets"]["spreadsheet"], ttl=0)
+#df = conn.read(spreadsheet=st.secrets["connections"]["gsheets"]["spreadsheet"], ttl=0)
 
 # 관리자 인증
-PASSWORD = "your_password" # 여기에 본인만의 비밀번호를 적으세요
+PASSWORD = "54850" # 여기에 본인만의 비밀번호를 적으세요
 st.sidebar.header("🔐 관리자 모드")
 user_pw = st.sidebar.text_input("비밀번호", type="password")
 
