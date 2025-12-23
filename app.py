@@ -1,56 +1,58 @@
 import streamlit as st
+from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 
-# 페이지 설정
-st.set_page_config(page_title="명절 예매 현황", layout="centered")
+st.set_page_config(page_title="명절 예매 현황 실시간", layout="centered")
 
-# 제목
-st.title("🚄 호남선 등 예매 현황 보고")
+# 1. 구글 시트 연결 설정
+conn = st.connection("gsheets", type=GSheetsConnection)
 
-# 1. 사이드바 입력창
-st.sidebar.header("📊 데이터 입력")
-st.sidebar.info("입력 예시:\n64.0\n09:00 71.4 44.7 10.9\n10:00 74.8 48.1 12.9")
+# 2. 기존 데이터 불러오기
+df = conn.read(ttl=0) # 실시간 데이터를 위해 캐시(ttl)를 0으로 설정
 
-raw_input = st.sidebar.text_area(
-    "데이터를 붙여넣으세요 (첫 줄은 전체 예매율)",
-    height=300
-)
+# --- 관리자 데이터 입력 섹션 ---
+PASSWORD = "your_password"
+st.sidebar.header("🔐 관리자 모드")
+user_pw = st.sidebar.text_input("비밀번호", type="password")
 
-if raw_input:
-    lines = raw_input.strip().split('\n')
+if user_pw == PASSWORD:
+    with st.sidebar.form("input_form"):
+        st.write("데이터 추가하기")
+        new_total = st.text_input("전체 예매율 (%)")
+        new_time = st.text_input("시간 (예: 13:00)")
+        new_ktx = st.text_input("KTX (%)")
+        new_normal = st.text_input("일반 (%)")
+        new_itx = st.text_input("ITX (%)")
+        
+        submit = st.form_submit_button("저장하기")
+        
+        if submit:
+            # 새로운 행 추가 로직
+            new_data = pd.DataFrame([{
+                "시간": new_time, "KTX": new_ktx, "일반": new_normal, 
+                "ITX": new_itx, "전체": new_total
+            }])
+            updated_df = pd.concat([df, new_data], ignore_index=True)
+            conn.update(data=updated_df)
+            st.success("데이터가 저장되었습니다!")
+            st.rerun()
+
+# --- 메인 보고서 화면 ---
+st.title("🚄 실시간 예매 현황 보고")
+
+if not df.empty:
+    latest_total = df.iloc[-1]['전체']
     
-    # 첫 번째 줄: 전체 예매율
-    total_rate = lines[0].strip()
-    
-    # 두 번째 줄부터: 시간별 상세 데이터
-    details = []
-    for line in lines[1:]:
-        parts = line.split()
-        if len(parts) >= 4:
-            details.append({
-                "시간": parts[0],
-                "KTX (%)": parts[1],
-                "일반 (%)": parts[2],
-                "ITX (%)": parts[3]
-            })
-
-    # 2. 메인 화면 - 전체 예매율 크게 표시
+    # 상단 요약 (가장 최근 전체 예매율)
     st.markdown(f"""
         <div style="background-color:#f0f2f6; padding:20px; border-radius:10px; text-align:center;">
             <h3 style="margin:0; color:#1f77b4;">현재 전체 예매율</h3>
-            <h1 style="margin:0; font-size:60px; color:#ff4b4b;">{total_rate}%</h1>
+            <h1 style="margin:0; font-size:60px; color:#ff4b4b;">{latest_total}%</h1>
         </div>
     """, unsafe_allow_html=True)
-
+    
     st.write("---")
-
-    # 3. 상세 데이터 표 표시
-    if details:
-        st.subheader("📋 시간별/열차종별 상세 현황")
-        df = pd.DataFrame(details)
-        # 표를 화면 꽉 차게 표시
-        st.table(df)
-    else:
-        st.warning("시간별 데이터를 입력해 주세요.")
+    st.subheader("📋 시간별 상세 현황")
+    st.table(df[['시간', 'KTX', '일반', 'ITX']])
 else:
-    st.info("왼쪽 사이드바에 데이터를 입력하면 보고서가 생성됩니다.")
+    st.info("표시할 데이터가 없습니다.")
