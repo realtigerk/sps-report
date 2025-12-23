@@ -6,7 +6,7 @@ st.set_page_config(page_title="명절 예매 현황 실시간", layout="centered
 
 # 구글 시트 연결
 # app.py의 상단 부분을 이렇게 바꿔보세요
-SHEET_URL = "본인의_구글시트_주소_전체"
+SHEET_URL = "https://docs.google.com/spreadsheets/d/1-HR4JFkcPC0mJGVFmDS1rcCfgnF0n2z3Env0Ha9d-tQ/edit?usp=drivesdk"
 conn = st.connection("gsheets", type=GSheetsConnection)
 df = conn.read(spreadsheet=SHEET_URL, ttl=0)
 
