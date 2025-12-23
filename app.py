@@ -8,7 +8,9 @@ st.set_page_config(page_title="명절 예매 현황 실시간", layout="centered
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 # 데이터 불러오기 (ttl=0으로 설정해야 실시간 반영됨)
-df = conn.read(ttl=0)
+# df = conn.read(ttl=0)
+# Secrets에 등록된 spreadsheet 주소를 직접 참조하도록 명시
+df = conn.read(spreadsheet=st.secrets["connections"]["gsheets"]["spreadsheet"], ttl=0)
 
 # 관리자 인증
 PASSWORD = "your_password" # 여기에 본인만의 비밀번호를 적으세요
